@@ -1,4 +1,6 @@
 import { firestoreDB } from "@/lib/firebaseConnection";
+import { hashPassword, generateToken } from "@/tools";
+
 export class AuthModel {
   constructor(email, password) {
     this.email = email;
@@ -6,81 +8,67 @@ export class AuthModel {
   }
   //Metodo que nos va a permitir en el futuro crear un auth en la base de datoss
   static async createAuth(email, password) {
-    const newUser = new AuthModel(email, name, phone);
+    const hashedPassword = await hashPassword(password);
+    const newAuth = new AuthModel(email, hashedPassword);
 
     try {
       // la referencia a la coleccion que queremos modificar
-      const docRef = await firestoreDB.collection("users").add({
-        email: newUser.email,
-        name: newUser.name,
-        phone: newUser.phone,
+      const docRef = await firestoreDB.collection("auth").add({
+        email: newAuth.email,
+        password: newAuth.password,
       });
 
-      const userId = docRef.id;
-      const userCreated = new UserModel(
-        newUser.email,
-        newUser.name,
-        newUser.phone
-      );
-
-      const response = {
-        userId,
-        userCreated,
-      };
-
-      return response;
+      return { newAuth, id: docRef.id };
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error creating auth:", error);
       throw error;
     }
   }
 
-  static async deleteAuth(idUser) {
+  static async deleteAuth(idAuth) {
     try {
       const deletedUser = await firestoreDB
-        .collection("users")
-        .doc(idUser)
+        .collection("auth")
+        .doc(idAuth)
         .delete();
 
       return deletedUser;
     } catch (error) {
-      console.error("Error Delete user:", error);
+      console.error("Error Delete auth:", error);
       throw error;
     }
   }
 
-  static async updateAuth(idUser, updateData) {
+  static async updateAuth(idAuth, updateData) {
     try {
-      const refData = firestoreDB.collection("users").doc(idUser);
+      const refData = firestoreDB.collection("auth").doc(idAuth);
       const updateUser = await refData.update(updateData);
 
       return updateUser;
     } catch (error) {
-      console.error("Error Update user:", error);
+      console.error("Error Update auth:", error);
       throw error;
     }
   }
 
-  static async checkAuthExists(idUser, updateData) {
+  static async checkAuthExists(idAuth) {
     try {
-      const refData = firestoreDB.collection("users").doc(idUser);
-      const updateUser = await refData.update(updateData);
+      const refData = await firestoreDB.collection("users").doc(idAuth).get();
+      const authExists = refData.exists;
 
-      return updateUser;
+      return authExists;
     } catch (error) {
-      console.error("Error Update user:", error);
+      console.error("Error Update auth:", error);
       throw error;
     }
   }
 
-  static async generateToken(idUser, updateData) {
+  static generateAuthToken(object) {
     try {
-      const refData = firestoreDB.collection("users").doc(idUser);
-      const updateUser = await refData.update(updateData);
-
-      return updateUser;
+      const token = generateToken(object);
+      return token;
     } catch (error) {
-      console.error("Error Update user:", error);
+      console.error("Error Update token:", error);
       throw error;
     }
   }
