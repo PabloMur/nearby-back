@@ -25,14 +25,23 @@ export class AuthModel {
     }
   }
 
-  static async deleteAuth(idAuth) {
+  static async deleteAuth(email) {
     try {
-      const deletedUser = await firestoreDB
+      const querySnapshot = await firestoreDB
         .collection("auth")
-        .doc(idAuth)
-        .delete();
+        .where("email", "==", email)
+        .get();
 
-      return deletedUser;
+      if (querySnapshot.empty) {
+        console.log(
+          "No se encontraron usuarios con el correo electrónico proporcionado."
+        );
+        return false;
+      }
+
+      const deletedAuth = await querySnapshot.docs[0].ref.delete();
+
+      return deletedAuth;
     } catch (error) {
       console.error("Error Delete auth:", error);
       throw error;
@@ -51,14 +60,16 @@ export class AuthModel {
     }
   }
 
-  static async checkAuthExists(idAuth) {
+  static async checkAuthExists(email) {
     try {
-      const refData = await firestoreDB.collection("users").doc(idAuth).get();
-      const authExists = refData.exists;
+      const querySnapshot = await firestoreDB
+        .collection("auth")
+        .where("email", "==", email)
+        .get();
 
-      return authExists;
+      return !querySnapshot.empty;
     } catch (error) {
-      console.error("Error Update auth:", error);
+      console.error("Error al verificar la existencia de auth:", error);
       throw error;
     }
   }

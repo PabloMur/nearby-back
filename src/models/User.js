@@ -36,12 +36,21 @@ export class UserModel {
     }
   }
 
-  static async deleteUser(idUser) {
+  static async deleteUser(email) {
     try {
-      const deletedUser = await firestoreDB
+      const querySnapshot = await firestoreDB
         .collection("users")
-        .doc(idUser)
-        .delete();
+        .where("email", "==", email)
+        .get();
+
+      if (querySnapshot.empty) {
+        console.log(
+          "No se encontraron usuarios con el correo electrónico proporcionado."
+        );
+        return false;
+      }
+
+      const deletedUser = await querySnapshot.docs[0].ref.delete();
 
       return deletedUser;
     } catch (error) {
@@ -58,6 +67,23 @@ export class UserModel {
       return updateUser;
     } catch (error) {
       console.error("Error Update user:", error);
+      throw error;
+    }
+  }
+
+  static async getAuthEmail(id) {
+    try {
+      const docSnapshot = await firestoreDB.collection("users").doc(id).get();
+      // Verificar si el documento con el ID dado existe
+      if (!docSnapshot.exists) {
+        console.log(`No se encontró ningún documento con el ID ${id}`);
+        return null;
+      }
+      console.log(docSnapshot.data());
+      // Devolver el correo electrónico asociado al ID
+      return docSnapshot.data().email;
+    } catch (error) {
+      console.error("Error al verificar la existencia de auth:", error);
       throw error;
     }
   }
