@@ -1,13 +1,12 @@
 import { firestoreDB } from "@/lib/firebaseConnection";
-export class UserModel {
-  constructor(email, name, phone) {
+export class AuthModel {
+  constructor(email, password) {
     this.email = email;
-    this.name = name;
-    this.phone = phone;
+    this.password = password;
   }
   //Metodo que nos va a permitir en el futuro crear un auth en la base de datoss
-  static async createUser(email, name, phone) {
-    const newUser = new UserModel(email, name, phone);
+  static async createAuth(email, password) {
+    const newUser = new AuthModel(email, name, phone);
 
     try {
       // la referencia a la coleccion que queremos modificar
@@ -36,7 +35,7 @@ export class UserModel {
     }
   }
 
-  static async deleteUser(idUser) {
+  static async deleteAuth(idUser) {
     try {
       const deletedUser = await firestoreDB
         .collection("users")
@@ -50,7 +49,31 @@ export class UserModel {
     }
   }
 
-  static async updateUser(idUser, updateData) {
+  static async updateAuth(idUser, updateData) {
+    try {
+      const refData = firestoreDB.collection("users").doc(idUser);
+      const updateUser = await refData.update(updateData);
+
+      return updateUser;
+    } catch (error) {
+      console.error("Error Update user:", error);
+      throw error;
+    }
+  }
+
+  static async checkAuthExists(idUser, updateData) {
+    try {
+      const refData = firestoreDB.collection("users").doc(idUser);
+      const updateUser = await refData.update(updateData);
+
+      return updateUser;
+    } catch (error) {
+      console.error("Error Update user:", error);
+      throw error;
+    }
+  }
+
+  static async generateToken(idUser, updateData) {
     try {
       const refData = firestoreDB.collection("users").doc(idUser);
       const updateUser = await refData.update(updateData);
