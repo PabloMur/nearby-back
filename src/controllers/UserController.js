@@ -12,7 +12,7 @@ export class UserController {
         const user = await UserModel.createUser(email, name, phone);
         const auth = await AuthModel.createAuth(email, password);
         const userCreated = user && auth;
-        return { userCreated };
+        if (userCreated) return { userCreated: true, userID: user.userId };
       }
     } catch (error) {
       console.error("Error creating user:", error);
