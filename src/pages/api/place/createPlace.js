@@ -1,4 +1,5 @@
 import NextCors from "nextjs-cors";
+import { firestoreDB } from "@/lib/firebaseConnection";
 
 export default async function handler(req, res) {
   try {
@@ -10,29 +11,58 @@ export default async function handler(req, res) {
 
     //? Verificar que no sea otro metodo diferente al de POST (Crear)
     if (req.method !== "POST") {
-      return res.status(405).end();
+      return res.status(405).json({
+        error: "metodo incorrecto",
+      });
     }
 
-    const { category, email, phone, password } = req.body; //? Obtener el nombre, email de "req" con el body
+    const {
+      category,
+      ratings,
+      createdBy,
+      comments,
+      description,
+      imageUrl,
+      latitude,
+      longitude,
+      placeName,
+      socialNetworks,
+      website,
+      zone,
+      stars,
+    } = req.body; //? Obtener el nombre, email de "req" con el body
 
     //? Para poder crear un usuario, el nombre y el email, son obligatorios asi que se verifican primero
-    if (!name || !email || !password || !phone) {
-      return res.status(400).json({ error: "Faltan datos obligatorios." });
-    }
 
-    //? Lógica para crear un usuario
-    const userCreated = await UserController.createUser(
-      email,
-      name,
-      phone,
-      password
-    );
-    if (userCreated) {
-      return res.status(200).json({ userCreated });
+    if (
+      !description ||
+      !imageUrl ||
+      !latitude ||
+      !longitude ||
+      !placeName ||
+      !zone
+    ) {
+      return res.status(400).json({ error: "Faltan datos obligatorios." });
     } else {
-      return res
-        .status(400)
-        .json({ error: `Ya existe una cuenta con este email ${email}.` });
+      const finalCategory = category ? category : "otro";
+      const finalWebsite = website ? website : "";
+
+      const newPlace = await firestoreDB.collection("places").add({
+        category: finalCategory,
+        ratings: 0,
+        createdBy,
+        comments: [],
+        description,
+        imageUrl, //resolver a futuro
+        latitude,
+        longitude,
+        placeName,
+        socialNetworks,
+        website: finalWebsite,
+        zone,
+        stars: 0,
+      });
+      return res.json({ placeCreated: newPlace });
     }
   } catch (error) {
     console.error("Error en el manejador:", error);
