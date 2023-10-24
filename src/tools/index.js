@@ -17,8 +17,13 @@ export async function hashPassword(password) {
 
 export async function comparePasswords(passwordUser, passwordBD) {
   try {
-    const passwordsMatch = await bcrypt.compare(passwordUser, passwordBD);
-    return passwordsMatch;
+    // const hashPasswordUser = await hashPassword(passwordUser);
+    // console.log(hashPasswordUser);
+    // console.log(passwordBD);
+    // const passwordsMatch = await bcrypt.compare(hashPasswordUser, passwordBD);
+    // console.log(passwordsMatch);
+    // return passwordsMatch;
+    return passwordUser == passwordBD;
   } catch (error) {
     throw new Error("Error al comparar contraseñas: " + error.message);
   }

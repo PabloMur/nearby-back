@@ -7,8 +7,8 @@ export class UserModel {
     this.lastname = lastname;
   }
   //Metodo que nos va a permitir en el futuro crear un auth en la base de datoss
-  static async createUser(email, name, lastname, phone) {
-    const newUser = new UserModel(email, name, lastname, phone);
+  static async createUser(email, name, phone, lastname) {
+    const newUser = new UserModel(email, name, phone, lastname);
 
     try {
       // la referencia a la coleccion que queremos modificar

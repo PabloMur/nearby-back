@@ -1,5 +1,6 @@
 import NextCors from "nextjs-cors";
 import { firestoreDB } from "@/lib/firebaseConnection";
+import { algoliaDB } from "@/lib/algoliaConnection";
 
 export default async function handler(req, res) {
   try {
@@ -62,7 +63,25 @@ export default async function handler(req, res) {
         zone,
         stars: 0,
       });
-      return res.json({ placeCreated: newPlace });
+
+      const testDeAlgolia = await algoliaDB.saveObject({
+        objectID: newPlace.id,
+        category: finalCategory,
+        ratings: 0,
+        createdBy,
+        comments: [],
+        description,
+        imageUrl, //resolver a futuro
+        latitude,
+        longitude,
+        placeName,
+        socialNetworks,
+        website: finalWebsite,
+        zone,
+        stars: 0,
+      });
+
+      return res.json({ placeCreated: newPlace, testDeAlgolia });
     }
   } catch (error) {
     console.error("Error en el manejador:", error);
