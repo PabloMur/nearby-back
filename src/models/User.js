@@ -90,4 +90,19 @@ export class UserModel {
       throw error;
     }
   }
+
+  static async getUserMe(id) {
+    try {
+      const docSnapshot = await firestoreDB.collection("users").doc(id).get();
+      // Verificar si el documento con el ID dado existe
+      if (!docSnapshot.exists) {
+        console.log(`No se encontró ningún documento con el ID ${id}`);
+        return null;
+      }
+      return docSnapshot.data();
+    } catch (error) {
+      console.error("Error al verificar la existencia de auth:", error);
+      throw error;
+    }
+  }
 }

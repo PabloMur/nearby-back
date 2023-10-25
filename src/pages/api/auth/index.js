@@ -34,13 +34,13 @@ export default async function handler(req, res) {
             .get()
         ).docs[0].id;
 
-        return res.json({ userLoged: passwordsAreEquals, userId });
+        return res.status(200).json({ userLoged: passwordsAreEquals, userId });
       } else {
         return res.json({ error: "Contraseña incorrecta" });
       }
     } else {
       return res
-        .status(400)
+        .status(200)
         .json({ error: "Usuario no encontrado o contraseña incorrecta" });
     }
   } catch (error) {

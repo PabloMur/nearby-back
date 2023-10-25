@@ -9,8 +9,8 @@ export class AuthModel {
   //Metodo que nos va a permitir en el futuro crear un auth en la base de datoss
   static async createAuth(email, password) {
     //a revisar
-    //const hashedPassword = await hashPassword(password);
-    const newAuth = new AuthModel(email, password);
+    const hashedPassword = await hashPassword(password);
+    const newAuth = new AuthModel(email, hashedPassword);
 
     try {
       // la referencia a la coleccion que queremos modificar
