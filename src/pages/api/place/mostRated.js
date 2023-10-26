@@ -5,9 +5,8 @@ export default async function handler(req, res) {
   try {
     await NextCors(req, res, {
       methods: ["GET"],
-      origin: "*", // Configura esto adecuadamente para tu aplicación en producción
+      origin: "*",
       optionsSuccessStatus: 200,
-      sizeLimit: 20 * 1024 * 1024,
     });
 
     if (req.method !== "GET") {
@@ -25,7 +24,10 @@ export default async function handler(req, res) {
       results.push({ placeId: doc.id, data: doc.data() });
     });
 
-    return res.status(200).json({ results });
+    // Obtenemos 5 resultados aleatorios
+    const randomResults = getRandomResults(results, 5);
+
+    return res.status(200).json({ results: randomResults });
   } catch (error) {
     console.error("Error en el manejador:", error);
     return res.status(500).json({
@@ -33,4 +35,13 @@ export default async function handler(req, res) {
       details: error.message,
     });
   }
+}
+
+function getRandomResults(results, count) {
+  if (count >= results.length) {
+    return results;
+  }
+
+  const shuffled = results.sort(() => 0.5 - Math.random()); // Mezcla aleatoriamente el arreglo
+  return shuffled.slice(0, count); // Devuelve los primeros 'count' elementos
 }

@@ -2,7 +2,6 @@ import NextCors from "nextjs-cors";
 import { firestoreDB } from "@/lib/firebaseConnection";
 import { algoliaDB } from "@/lib/algoliaConnection";
 import { cloudinary } from "@/lib/cloudinaryConnection";
-import formidable from "formidable"; // Agregamos la importación de formidable
 
 export default async function handler(req, res) {
   try {
@@ -19,79 +18,68 @@ export default async function handler(req, res) {
       });
     }
 
-    const form = new formidable.IncomingForm();
+    const {
+      category,
+      createdBy,
+      description,
+      imagesUrl,
+      latitude,
+      longitude,
+      placeName,
+      socialNetworks,
+      website,
+      zone,
+    } = req.body;
 
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        return res
-          .status(400)
-          .json({ error: "Error al procesar la carga de archivos." });
-      }
+    // Procesar y subir los archivos a Cloudinary, obteniendo las rutas de las imágenes
+    const transformedImages = [];
 
-      const {
-        category,
-        createdBy,
-        comments,
-        description,
-        latitude,
-        longitude,
-        placeName,
-        socialNetworks,
-        website,
-        zone,
-        stars,
-      } = fields;
+    // for (const file in imagesUrl) {
+    //   const result = await cloudinary.uploader.upload(file, {
+    //     resource_type: "image",
+    //     discard_original_filename: true,
+    //     width: 1000,
+    //   });
+    //   transformedImages.push(result.secure_url);
+    // }
 
-      // Procesar y subir los archivos a Cloudinary, obteniendo las rutas de las imágenes
-      const transformedImages = [];
+    const finalCategory = category ? category : "otro";
+    const finalWebsite = website ? website : "";
 
-      for (const fileKey in files) {
-        const file = files[fileKey];
-        const result = await cloudinary.uploader.upload(file.path, {
-          resource_type: "image",
-          discard_original_filename: true,
-          width: 1000,
-        });
-        transformedImages.push(result.secure_url);
-      }
-
-      const finalCategory = category ? category : "otro";
-      const finalWebsite = website ? website : "";
-
-      const newPlace = await firestoreDB.collection("places").add({
-        category: finalCategory,
-        ratings: 0,
-        createdBy,
-        comments: [],
-        description,
-        imageUrl: transformedImages,
-        latitude,
-        longitude,
-        placeName,
-        socialNetworks,
-        website: finalWebsite,
-        zone,
-        stars: 0,
-      });
-
-      const testDeAlgolia = await algoliaDB.saveObject({
-        objectID: newPlace.id,
-        category: finalCategory,
-        ratings: 0,
-        createdBy,
-        comments: [],
-        description,
-        latitude,
-        longitude,
-        placeName,
-        socialNetworks,
-        website: finalWebsite,
-        zone,
-        stars: 0,
-      });
-
-      return res.json({ placeCreated: newPlace, testDeAlgolia });
+    const newPlace = await firestoreDB.collection("places").add({
+      category: finalCategory,
+      createdBy,
+      comments: [],
+      description,
+      imagesUrl,
+      latitude,
+      longitude,
+      placeName,
+      socialNetworks,
+      website: finalWebsite,
+      views: 0,
+      zone,
+      stars: 0,
     });
+
+    const testDeAlgolia = await algoliaDB.saveObject({
+      objectID: newPlace.id,
+      category: finalCategory,
+      createdBy,
+      comments: [],
+      description,
+      imagesUrl,
+      latitude,
+      longitude,
+      placeName,
+      socialNetworks,
+      website: finalWebsite,
+      views: 0,
+      zone,
+      stars: 0,
+    });
+
+    return res.json({ placeCreated: newPlace, testDeAlgolia });
   } catch (error) {
     console.error("Error en el manejador:", error);
     return res.status(500).json({
