@@ -48,6 +48,7 @@ export default async function handler(req, res) {
             if (!userData.comments) {
                 userData.comments = [];
             }
+            comment.idPlace=placeId;
             userData.comments.push(comment);
 
             // Actualizar el usuario con el nuevo comentario
