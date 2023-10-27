@@ -16,6 +16,7 @@ export default async function handler(req, res) {
 
         const { comment } = req.body; // Obtener los datos de "req" desde el cuerpo de la solicitud
         const { placeId, userId } = req.query;
+        const idComment = generarNumeroAleatorio();
 
         // Obteniendo la referencia del lugar
         const refPlace = firestoreDB.collection("places").doc(placeId);
@@ -33,9 +34,10 @@ export default async function handler(req, res) {
             if (!placeData.comments) {
                 placeData.comments = [];
             }
-            // comment.name = userData.name; 
+
             const newComment = {
                 ...comment,
+                id: idComment,
                 name: userData.name
             }
             placeData.comments.push(newComment);
@@ -52,8 +54,13 @@ export default async function handler(req, res) {
             if (!userData.comments) {
                 userData.comments = [];
             }
-            comment.idPlace=placeId;
-            userData.comments.push(comment);
+            const newComment = {
+                ...comment,
+                id: idComment,
+                idPlace: placeId
+            }
+            
+            userData.comments.push(newComment);
 
             // Actualizar el usuario con el nuevo comentario
             await refUser.update(userData);
@@ -67,4 +74,14 @@ export default async function handler(req, res) {
         console.error("Error en el manejador:", error);
         return res.status(500).json({ error: "Ocurrió un error en el servidor." });
     }
+}
+
+function generarNumeroAleatorio() {
+    const longitud = 10;
+    let numeroAleatorio = '';
+    for (let i = 0; i < longitud; i++) {
+        const digito = Math.floor(Math.random() * 10);
+        numeroAleatorio += digito;
+    }
+    return numeroAleatorio;
 }

@@ -1,7 +1,6 @@
 import NextCors from "nextjs-cors";
 import { firestoreDB } from "@/lib/firebaseConnection";
 import { algoliaDB } from "@/lib/algoliaConnection";
-import { cloudinary } from "@/lib/cloudinaryConnection";
 
 export default async function handler(req, res) {
   try {
@@ -19,10 +18,12 @@ export default async function handler(req, res) {
     }
 
     const { placeId } = req.query;
+
+    //Obtener la referencia del lugar y eliminarlo en Firebase
     const refPlace = firestoreDB.collection("places").doc(placeId);
-    // const placeDoc = await refPlace.get();
     await refPlace.delete();
     
+    //Borrar el lugar en la base de datos Algolia
     await algoliaDB.deleteObject(placeId, (err, content) => {
         if (err) {
             console.error(err);
