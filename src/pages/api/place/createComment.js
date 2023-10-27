@@ -20,6 +20,11 @@ export default async function handler(req, res) {
         // Obteniendo la referencia del lugar
         const refPlace = firestoreDB.collection("places").doc(placeId);
         const placeDoc = await refPlace.get();
+        
+        // Obtener la referencia del usuario
+        const refUser = firestoreDB.collection("users").doc(userId);
+        const userDoc = await refUser.get();
+        const userData = userDoc.data();
 
         if (placeDoc.exists) {
             const placeData = placeDoc.data();
@@ -28,7 +33,12 @@ export default async function handler(req, res) {
             if (!placeData.comments) {
                 placeData.comments = [];
             }
-            placeData.comments.push(comment);
+            // comment.name = userData.name; 
+            const newComment = {
+                ...comment,
+                name: userData.name
+            }
+            placeData.comments.push(newComment);
             
             // Actualizar el lugar con el nuevo comentario
             await refPlace.update(placeData);
@@ -36,14 +46,8 @@ export default async function handler(req, res) {
             console.log("El documento de lugar no existe.");
         }
 
-        // Obtener la referencia del usuario
-        //! No se si toca obtener el nombre del usuario o ellos lo ponen en el body
-        const refUser = firestoreDB.collection("users").doc(userId);
-        const userDoc = await refUser.get();
 
         if (userDoc.exists) {
-            const userData = userDoc.data();
-
             // Agregar el comentario al usuario
             if (!userData.comments) {
                 userData.comments = [];
