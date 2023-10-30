@@ -20,7 +20,10 @@ export default async function handler(req, res) {
     const results = [];
 
     // Realiza la consulta para ordenar los lugares por el atributo "stars" de mayor a menor
-    placesRef.orderBy("stars", "desc").get()
+    placesRef
+      .orderBy("stars", "desc")
+      .limit(10)
+      .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
           // Agrega cada lugar al arreglo de resultados
