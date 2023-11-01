@@ -13,20 +13,15 @@ export default async function handler(req, res) {
       return res.status(405).end();
     }
 
-    const { userId } = req.query;
-    const userRef = firestoreDB.collection("users").doc(userId);
-    const userDoc = await userRef.get();
+    const usersRef = firestoreDB.collection("users");
+    const usersSnapshot = await usersRef.get();
 
-    if (!userDoc.exists) {
-      return res
-        .status(400)
-        .json({ error: "No se encontró información del usuario." });
-    }
+    const promises = [];
 
-    const userData = userDoc.data();
-    const userEmail = userData.email; // Suponiendo que el email está almacenado en el campo 'email'
+    usersSnapshot.forEach(async (userDoc) => {
+      const userData = userDoc.data();
+      const userEmail = userData.email;
 
-    if (userData) {
       const placesRef = firestoreDB.collection("places");
       const placesSnapshot = await placesRef
         .where("createdBy", "==", userEmail)
@@ -38,21 +33,21 @@ export default async function handler(req, res) {
         matchingPlaces.push({ id: placeDoc.id, ...placeData });
       });
 
-      // Actualizar el campo myPlaces en los datos del usuario
       const updatedUserData = {
         ...userData,
         myPlaces: matchingPlaces,
       };
 
-      // Actualizar el documento del usuario con los lugares encontrados
-      await userRef.update(updatedUserData);
+      const updateUserPromise = userDoc.ref.update(updatedUserData);
+      promises.push(updateUserPromise);
+    });
 
-      return res.status(200).json({ userMatchingPlaces: matchingPlaces });
-    } else {
-      return res
-        .status(400)
-        .json({ error: "No se encontró información del usuario." });
-    }
+    // Esperar a que se completen todas las actualizaciones de usuarios
+    await Promise.all(promises);
+
+    return res
+      .status(200)
+      .json({ message: "Operación completada para todos los usuarios." });
   } catch (error) {
     console.error("Error en el manejador:", error);
     return res.status(500).json({ error: "Ocurrió un error en el servidor." });
