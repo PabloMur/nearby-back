@@ -26,8 +26,8 @@ export default async function handler(req, res) {
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          // Agrega cada lugar al arreglo de resultados
-          results.push(doc.data());
+          // Agrega cada lugar al arreglo de resultados con su ID
+          results.push({ id: doc.id, ...doc.data() });
         });
 
         // Devuelve el arreglo completo como respuesta JSON
